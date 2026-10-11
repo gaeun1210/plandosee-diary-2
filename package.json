@@ -1,16 +1,20 @@
 {
-  "name": "pds-diary",
-  "version": "2.0.0",
+  "name": "pds-diary-2",
+  "version": "3.0.0",
   "private": true,
-  "description": "플랜두씨 다이어리 — 계획(Plan) → 실제로 한 일(Do) → 돌아보기(See)",
+  "description": "플랜두씨 다이어리 2 — 과제 6 다이어리에 가입·로그인(bcrypt + DB 세션)을 붙인 판",
   "main": "server.js",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.js",
-    "dev": "node --env-file=.env server.js"
+    "dev": "node --env-file=.env server.js",
+    "verify": "node scripts/verify-auth.mjs"
   },
   "dependencies": {
-    "express": "^4.21.2",
-    "pg": "^8.13.1"
+    "bcryptjs": "^3.0.3",
+    "express": "^4.22.3",
+    "pg": "^8.23.1"
   }
 }

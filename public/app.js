@@ -1,5 +1,5 @@
 'use strict';
-// 플랜두씨 다이어리 화면 코드 — 행운 A '클로버 가든' 웹 버전
+// 플랜두씨 다이어리 화면 코드 — 행운 A '클로버 가든' 웹 버전 (과제 7: 로그인 뒤에만 시작)
 // 모든 사용자 글자는 textContent로만 화면에 넣는다(innerHTML 사용 금지) → 스크립트 모양 글자도 글자 그대로 보인다.
 
 const $ = (s) => document.querySelector(s);
@@ -52,14 +52,19 @@ const turtleArt = (cls) => {
   return t;
 };
 
+// 모든 요청에 X-Requested-With 머리글을 붙인다(서버가 다른 사이트에서 온 쓰기 요청을 막는 표시).
+// 세션 쿠키는 브라우저가 알아서 붙이고, 화면 코드는 그 값을 읽을 수 없다(HttpOnly).
 async function api(path, opts = {}) {
   const res = await fetch(path, {
     method: opts.method || 'GET',
-    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'pds-diary', ...(opts.headers || {}) },
     body: opts.body ? JSON.stringify(opts.body) : undefined,
+    credentials: 'same-origin',
   });
   let data = null;
   try { data = await res.json(); } catch { /* 빈 응답 */ }
+  // 로그인이 끊겼으면(만료·다른 곳에서 비밀번호 변경) 화면을 비우고 로그인 화면으로 돌아간다.
+  if (res.status === 401 && !path.startsWith('/api/auth/') && window.onAuthLost) window.onAuthLost();
   if (!res.ok) {
     const e = new Error((data && data.error) || `요청이 실패했습니다 (${res.status}).`);
     e.status = res.status; e.data = data;
@@ -126,7 +131,7 @@ function openDialog(d) {
 $$('dialog [data-close]').forEach((b) => b.addEventListener('click', () => b.closest('dialog').close()));
 
 // ---------- 화면 바꾸기 (왼쪽 메뉴) ----------
-const SCREENS = ['home', 'plan', 'tasks', 'logs', 'review'];
+const SCREENS = ['home', 'plan', 'tasks', 'logs', 'review', 'exp'];
 const ALIAS = { history: 'plan', see: 'review', do: 'tasks' };
 function showScreen(name, { push = true, top = true } = {}) {
   name = ALIAS[name] || name;
@@ -136,6 +141,7 @@ function showScreen(name, { push = true, top = true } = {}) {
     if (b.dataset.go === name) b.setAttribute('aria-current', 'page');
     else b.removeAttribute('aria-current');
   });
+  if (name === 'exp' && window.loadExperiment && window.diaryStarted) window.loadExperiment();
   if (top) scrollTo({ top: 0 });
   if (push) {
     try { history.replaceState(null, '', `${location.pathname}${location.search}${name === 'home' ? '' : `#${name}`}`); } catch { /* 무시 */ }
@@ -1179,7 +1185,9 @@ async function refreshAll() {
   await Promise.all([loadTasks(), loadReview(), loadReviews(), loadHistory()]);
 }
 
-(async () => {
+// 로그인이 확인된 뒤에만 auth.js가 이 함수를 부른다(그 전에는 자료 요청을 하나도 보내지 않는다).
+window.startDiary = async () => {
+  window.diaryStarted = true;
   const today = seoulToday();
   $('#today-label').textContent = `${fmtDate(today)} ${dowOf(today)}요일`;
   $('#task-form').due_date.value = today;
@@ -1191,7 +1199,7 @@ async function refreshAll() {
   } catch (err) {
     toast(`자료를 불러오지 못했습니다: ${err.message}`, true);
   }
-})();
+};
 
 // ---------- 음악 (왼쪽 메뉴 아래 작은 플레이어, 누를 때만 재생) ----------
 (() => {

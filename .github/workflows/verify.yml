@@ -1,0 +1,63 @@
+# 인증 확인 기록
+# - main에 올릴 때마다: CI 안에 임시 PostgreSQL을 띄우고 서버를 켠 뒤 scripts/verify-auth.mjs로 32가지 확인을 돌린다(실패하면 빨간 X).
+# - "Run workflow"로 배포 주소를 넣고 돌리면: 그 주소에 같은 확인을 하고, 결과(비밀번호·세션 값은 가림)를 docs/evidence/ 에 커밋한다.
+# 이 파일에는 비밀값이 없다. 임시 DB는 비밀번호 없이(trust) 띄우고 작업이 끝나면 사라진다.
+name: verify-auth
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', '**.md']
+  workflow_dispatch:
+    inputs:
+      base:
+        description: '확인할 배포 주소 (예: https://plandosee-diary-2.vercel.app)'
+        required: true
+permissions:
+  contents: write
+jobs:
+  local:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+      - name: 서버 켜기
+        run: |
+          DATABASE_URL=postgres://postgres@localhost:5432/postgres PGSSL=disable PORT=3000 node server.js > server.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/healthz && break; sleep 1; done
+      - name: 확인 32가지
+        run: BASE=http://localhost:3000 node scripts/verify-auth.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: 서버 로그에 비밀번호·세션 값이 없는지(로그 내용 보기)
+        if: always()
+        run: cat server.log
+  deployed:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: 배포 주소에 확인 32가지
+        env:
+          BASE: ${{ inputs.base }}
+        run: |
+          STAMP=$(TZ=Asia/Seoul date +%Y%m%d-%H%M)
+          node scripts/verify-auth.mjs > "docs/evidence/auth-check-$STAMP.md" || echo "일부 실패 — 파일에 ❌로 적힘"
+          cat "docs/evidence/auth-check-$STAMP.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: 기록 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/evidence
+          git commit -m "인증 확인 기록 (배포 주소 자동 확인)" || exit 0
+          git push
