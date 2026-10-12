@@ -21,10 +21,12 @@ if (!process.env.DATABASE_URL) {
 // Vercel(서버리스)에서는 요청마다 짧게 켜졌다 꺼지므로 연결을 적게 쓴다.
 const SERVERLESS = Boolean(process.env.VERCEL);
 
-// PGSSL: 비우면 암호화+인증서 검증(Neon 등), no-verify면 암호화는 하되 인증서 검증 생략(Supabase 풀러), disable이면 암호화 없음(내 컴퓨터).
+// PGSSL: 비우면 암호화+인증서 검증(Neon — Vercel Storage에서 만든 DB 포함), no-verify면 암호화는 하되 인증서 검증 생략(Supabase 풀러), disable이면 암호화 없음(내 컴퓨터).
 const SSL_MODE = process.env.PGSSL || 'verify';
 // 접속 문자열의 sslmode 값이 아래 ssl 설정을 덮어쓰지 않도록 떼어 낸다.
-const DB_URL = process.env.DATABASE_URL.replace(/([?&])sslmode=[^&]*&?/, '$1').replace(/[?&]$/, '');
+// (Neon 주소의 channel_binding 값도 같은 이유로 떼어 낸다)
+const DB_URL = process.env.DATABASE_URL
+  .replace(/([?&])sslmode=[^&]*&?/, '$1').replace(/([?&])channel_binding=[^&]*&?/, '$1').replace(/[?&]$/, '');
 const pool = new Pool({
   connectionString: DB_URL,
   ssl: SSL_MODE === 'disable' ? false : { rejectUnauthorized: SSL_MODE !== 'no-verify' },
@@ -38,12 +40,17 @@ let schemaReady = null;
 function ensureSchema() {
   if (!schemaReady) {
     schemaReady = (async () => {
+      // 잠금은 트랜잭션 안에서만 유지되는 것(xact)을 쓴다 → Neon·Supabase의 트랜잭션 풀러를 거쳐도 잠금이 남지 않는다.
       const c = await pool.connect();
       try {
-        await c.query('SELECT pg_advisory_lock(707070)');
+        await c.query('BEGIN');
+        await c.query('SELECT pg_advisory_xact_lock(707070)');
         await c.query(SCHEMA_SQL);
+        await c.query('COMMIT');
+      } catch (e) {
+        await c.query('ROLLBACK').catch(() => {});
+        throw e;
       } finally {
-        await c.query('SELECT pg_advisory_unlock(707070)').catch(() => {});
         c.release();
       }
     })().catch((e) => { schemaReady = null; throw e; });

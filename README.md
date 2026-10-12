@@ -37,8 +37,13 @@ docs/evidence/              배포 주소에 돌린 확인 기록
 
 ## 배포 (무료)
 
-1. **DB — Supabase 새 프로젝트**(과제 6 DB와 따로): New project(지역 Seoul) → DB 비밀번호를 정해 따로 보관 → **Connect → Session pooler** 주소를 복사해 `[YOUR-PASSWORD]`를 그 비밀번호로 바꿉니다. 이 주소가 비밀값입니다.
-2. **사이트 — Vercel**: Add New → Project → `plandosee-diary-2` Import → Framework Preset **Other** → Environment Variables에 `DATABASE_URL`(1번 값), `PGSSL`=`no-verify` → Deploy.
+과제 6 DB(Supabase `plandosee_diary`)와는 따로, 새 PostgreSQL을 씁니다. 둘 중 하나:
+
+- **Neon (Vercel에서 바로 만들기, 이번 배포에 사용)**: Vercel → Add New → Project → `plandosee-diary-2` Import → Framework Preset **Other** → Deploy. 그다음 프로젝트의 **Storage → Create Database → Neon**(지역 Seoul 또는 가까운 곳) → 이 프로젝트에 연결하면 `DATABASE_URL`이 환경변수로 자동으로 들어갑니다. `PGSSL`은 넣지 않습니다(인증서까지 검증). 연결한 뒤 **Deployments → Redeploy** 한 번.
+- **Supabase 새 프로젝트**: New project(지역 Seoul) → **Connect → Session pooler** 주소의 `[YOUR-PASSWORD]`를 DB 비밀번호로 바꿔 Vercel 환경변수 `DATABASE_URL`에, `PGSSL`=`no-verify`. (무료 요금제는 계정당 동시에 켜 둘 수 있는 프로젝트가 2개까지입니다.)
+
+1. 위 방법으로 DB 주소를 Vercel 환경변수에만 넣습니다. 이 주소가 비밀값입니다.
+2. Deploy(또는 Redeploy).
 3. 새 시크릿 창에서 배포 주소를 열면 로그인 화면이 나옵니다. 표는 첫 요청 때 자동으로 생깁니다.
 
 로그인을 위한 별도 비밀키(JWT 서명키 등)는 없습니다. 세션 값은 서명하지 않은 무작위 값이고, 서버는 DB에 그 해시가 있는지로만 확인합니다. 따라서 환경변수는 과제 6과 같은 `DATABASE_URL`, `PGSSL` 두 개뿐입니다.
