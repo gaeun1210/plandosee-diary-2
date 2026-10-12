@@ -886,7 +886,11 @@ async function diaryToday(db, uid) {
       COUNT(*)::int AS planned, COUNT(*) FILTER (WHERE done)::int AS done,
       COALESCE(SUM(estimated_minutes),0)::int AS estimated_minutes,
       (SELECT COALESCE(SUM(actual_minutes),0)::int FROM work_logs
-        WHERE user_id=$1 AND (started_at AT TIME ZONE 'Asia/Seoul')::date = ${TODAY_SQL}) AS actual_minutes_today
+        WHERE user_id=$1 AND (started_at AT TIME ZONE 'Asia/Seoul')::date = ${TODAY_SQL}) AS actual_minutes_today,
+      -- 마감일과 상관없이 오늘(서울) 완료로 체크했고 되돌리지 않은 내 할 일 수
+      (SELECT COUNT(*)::int FROM task_completions c JOIN tasks tk ON tk.id = c.task_id
+        WHERE c.user_id=$1 AND tk.deleted_at IS NULL AND c.reopened_at IS NULL
+          AND (c.completed_at AT TIME ZONE 'Asia/Seoul')::date = ${TODAY_SQL}) AS completed_today
     FROM t`, [uid]);
   s.done_rate = s.planned ? Math.round((s.done / s.planned) * 1000) / 10 : null;
   return s;

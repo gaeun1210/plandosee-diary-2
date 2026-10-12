@@ -94,7 +94,7 @@
           el('p', { class: 'tl-val' }, d.value == null
             ? el('b', { class: 'miss', text: `값 없음 — ${d.missing_reason}` })
             : el('b', { text: `${n1(d.value)} ${x.unit}` })),
-          el('p', { class: 'tl-snap muted', text: `그날 다이어리: 마감 할 일 ${s.planned ?? '–'}개 중 ${s.done ?? '–'}개 완료${s.done_rate != null ? ` (완료율 ${n1(s.done_rate)}%)` : ''}, 실제로 한 시간 ${s.actual_minutes_today ?? 0}분` }),
+          el('p', { class: 'tl-snap muted', text: `그날 다이어리(저장할 때): 완료 체크 ${s.completed_today ?? '–'}개 · 마감 할 일 ${s.planned ?? '–'}개 중 ${s.done ?? '–'}개 완료${s.done_rate != null ? ` (완료율 ${n1(s.done_rate)}%)` : ''} · 실제로 한 시간 ${s.actual_minutes_today ?? 0}분` }),
           d.note ? el('p', { class: 'tl-note', text: d.note }) : null,
           el('p', { class: 'tl-time muted', text: `저장 ${fmtT(d.created_at)}${d.updated_at !== d.created_at ? ` · 고침 ${fmtT(d.updated_at)}` : ''}` })),
         isToday ? el('button', { type: 'button', class: 'mini', text: '고치기', onclick: () => openDay(d) }) : null);
@@ -235,8 +235,10 @@
     try {
       const s = await api('/api/experiment/diary-today');
       box.replaceChildren(...[
-        el('p', { text: `오늘(${s.date}) 마감 할 일 ${s.planned}개 중 ${s.done}개 완료${s.done_rate != null ? ` → 완료율 ${n1(s.done_rate)}%` : ' → 마감 할 일이 없어 완료율 없음'} · 오늘 실제로 한 시간 ${s.actual_minutes_today}분` }),
-        s.done_rate != null ? el('button', { type: 'button', class: 'mini', text: '완료율을 값으로 넣기', onclick: () => { dayForm.value.value = n1(s.done_rate); } }) : null].filter(Boolean));
+        el('p', { text: `오늘(${s.date}) 완료로 체크한 할 일 ${s.completed_today}개(마감일 상관없이) · 오늘 마감 할 일 ${s.planned}개 중 ${s.done}개 완료${s.done_rate != null ? ` → 완료율 ${n1(s.done_rate)}%` : ' → 마감 할 일이 없어 완료율 없음'} · 오늘 실제로 한 시간 ${s.actual_minutes_today}분` }),
+        el('button', { type: 'button', class: 'mini', text: `완료한 수 ${s.completed_today}개 넣기`, onclick: () => { dayForm.value.value = String(s.completed_today); } }),
+        s.done_rate != null ? el('button', { type: 'button', class: 'mini', text: '완료율 넣기', onclick: () => { dayForm.value.value = n1(s.done_rate); } }) : null,
+        el('button', { type: 'button', class: 'mini', text: `실제 시간 ${s.actual_minutes_today}분 넣기`, onclick: () => { dayForm.value.value = String(s.actual_minutes_today); } })].filter(Boolean));
     } catch { box.replaceChildren(); }
   }
   dayForm.addEventListener('submit', async (e) => {
