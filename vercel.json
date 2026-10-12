@@ -1,5 +1,5 @@
 {
-  "regions": ["icn1"],
+  "regions": ["sin1"],
   "outputDirectory": "public",
   "functions": {
     "api/index.js": { "includeFiles": "db/schema.sql", "maxDuration": 10 }

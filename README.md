@@ -23,7 +23,7 @@
 server.js                   Express 서버 + API. 인증 라우트(/api/auth/*)와 주인 확인이 모두 여기
 lib/auth.js                 비밀번호 해시(bcrypt)·세션 값·쿠키 도구
 api/index.js                Vercel 서버리스 함수 입구 (server.js를 그대로 씀)
-vercel.json                 Vercel 설정 (화면 폴더·서울 지역·보안 헤더)
+vercel.json                 Vercel 설정 (화면 폴더·싱가포르 지역(DB와 같은 곳)·보안 헤더)
 db/schema.sql               표·제약·트리거 v3 (서버 시작 때 자동 적용, 여러 번 실행해도 안전)
 contracts/pds-schema-v3.json 표·규칙·인증 방식 정리 (v2는 과제 6 것 그대로 둠)
 public/index.html           화면 (로그인 화면 + 다이어리)
