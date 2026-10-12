@@ -52,7 +52,8 @@ jobs:
           BASE: ${{ inputs.base }}
         run: |
           STAMP=$(TZ=Asia/Seoul date +%Y%m%d-%H%M)
-          node scripts/verify-auth.mjs > "docs/evidence/auth-check-$STAMP.md" || echo "일부 실패 — 파일에 ❌로 적힘"
+          mkdir -p docs/evidence
+          node scripts/verify-auth.mjs > "docs/evidence/auth-check-$STAMP.md" 2> verify-error.txt || echo "::warning::일부 실패 또는 오류 — $(head -c 300 verify-error.txt | tr '\n' ' ')"
           cat "docs/evidence/auth-check-$STAMP.md" >> "$GITHUB_STEP_SUMMARY"
       - name: 기록 커밋
         run: |
