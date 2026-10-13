@@ -1,5 +1,5 @@
 # 인증 확인 기록
-# - main에 올릴 때마다: CI 안에 임시 PostgreSQL을 띄우고 서버를 켠 뒤 scripts/verify-auth.mjs로 32가지 확인을 돌린다(실패하면 빨간 X).
+# - main에 올릴 때마다: CI 안에 임시 PostgreSQL을 띄우고 서버를 켠 뒤 scripts/verify-auth.mjs로 34가지 확인을 돌린다(실패하면 빨간 X).
 # - "Run workflow"로 배포 주소를 넣고 돌리면: 그 주소에 같은 확인을 하고, 결과(비밀번호·세션 값은 가림)를 docs/evidence/ 에 커밋한다.
 # 이 파일에는 비밀값이 없다. 임시 DB는 비밀번호 없이(trust) 띄우고 작업이 끝나면 사라진다.
 name: verify-auth
@@ -35,7 +35,7 @@ jobs:
         run: |
           DATABASE_URL=postgres://postgres@localhost:5432/postgres PGSSL=disable PORT=3000 node server.js > server.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:3000/healthz && break; sleep 1; done
-      - name: 확인 32가지
+      - name: 확인 34가지
         run: BASE=http://localhost:3000 node scripts/verify-auth.mjs | tee -a "$GITHUB_STEP_SUMMARY"
       - name: 서버 로그에 비밀번호·세션 값이 없는지(로그 내용 보기)
         if: always()
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - name: 배포 주소에 확인 32가지
+      - name: 배포 주소에 확인 34가지
         env:
           BASE: ${{ inputs.base }}
         run: |

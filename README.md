@@ -30,7 +30,7 @@ public/index.html           화면 (로그인 화면 + 다이어리)
 public/auth.js              로그인·가입·로그아웃·계정 메뉴
 public/app.js               다이어리 화면 (과제 6 코드 + 로그인 뒤에만 시작)
 public/exp.js               5일 실험 화면
-scripts/verify-auth.mjs     인증 확인 32가지를 실제 요청으로 돌리고 기록(비밀값 가림)을 만드는 스크립트
+scripts/verify-auth.mjs     인증 확인 34가지를 실제 요청으로 돌리고 기록(비밀값 가림)을 만드는 스크립트
 .github/workflows/verify.yml 위 스크립트를 CI(임시 DB)와 배포 주소에 돌림
 docs/evidence/              배포 주소에 돌린 확인 기록
 ```

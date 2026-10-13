@@ -205,6 +205,19 @@ const fmtSnap = (s) => `계획 ${s.plans} · 계획 이력 ${s.revisions} · 할
 
 // ---------- 6. 남의 자료: 양방향 읽기·수정·삭제 ----------
 async function attack(me, meCookie, other, otherCookie, otherName) {
+  // 비교용: 같은 주소·같은 방식을 '내 자료'에 보내면 성공한다(주인일 때만 통과한다는 것을 나란히 보이기 위해)
+  const meName = otherName === 'B' ? 'A' : 'B';
+  p(`**[성공 — 주인] ${meName}가 자기 자료에 같은 요청**`);
+  p('');
+  const ok = [];
+  ok.push((await req(`읽기(주인): ${meName}의 할 일 #${me.task1}의 실행 기록`, 'GET', `/api/tasks/${me.task1}/logs`, { cookie: meCookie })).status);
+  ok.push((await req(`수정(주인): ${meName}의 할 일 #${me.task2} 고치기`, 'PUT', `/api/tasks/${me.task2}`, { cookie: meCookie, body: { title: `${meName} 할 일 2`, due_date: '2026-10-13', priority: 2, tags: ['시험'], estimated_minutes: 30 } })).status);
+  const tmp = (await req(`(지울 할 일 하나 만들기) ${meName}의 계획 #${me.plan}`, 'POST', '/api/tasks', { cookie: meCookie, body: task(me.plan, `${meName}가 지울 할 일`) })).json.id;
+  ok.push((await req(`삭제(주인): ${meName}의 할 일 #${tmp} 지우기`, 'DELETE', `/api/tasks/${tmp}`, { cookie: meCookie })).status);
+  p(`> 주인 요청 결과: ${ok.join(', ')} (읽기·수정·삭제 모두 200이어야 함)`);
+  p('');
+  p(`**[거절 — 남] ${meName}가 ${otherName}의 자료에 같은 종류의 요청**`);
+  p('');
   const pre = await snapshot(otherName, otherCookie);
   p(`${otherName}의 자료 (거절 시험 전, ${otherName} 본인 내보내기로 셈): ${fmtSnap(pre)}`);
   p('');
@@ -227,12 +240,13 @@ async function attack(me, meCookie, other, otherCookie, otherName) {
   const post = await snapshot(otherName, otherCookie);
   p(`${otherName}의 자료 (거절 시험 뒤): ${fmtSnap(post)}`);
   p('');
-  return { readOk, updOk, delOk, same: pre.sig === post.sig && fmtSnap(pre) === fmtSnap(post), pre, post, st, st2, st3 };
+  return { ownerOk: ok.every((x) => x === 200), readOk, updOk, delOk, same: pre.sig === post.sig && fmtSnap(pre) === fmtSnap(post), pre, post, st, st2, st3 };
 }
 
 p('## 6. 남의 자료 읽기·수정·삭제 — A가 B를 (카드 4)');
 p('');
 const ab = await attack(A, cA, B, cB, 'B');
+check('C117 비교', 'A가 자기 자료에 보낸 읽기·수정·삭제는 200', ab.ownerOk);
 check('C117', 'A → B 읽기 4가지 모두 404', ab.readOk, ab.st.join(', '));
 check('C118', 'A → B 수정 4가지 모두 404', ab.updOk, ab.st2.join(', '));
 check('C119', 'A → B 삭제 2가지 모두 404', ab.delOk, ab.st3.join(', '));
@@ -241,6 +255,7 @@ check('C122', '거절 앞뒤로 B의 자료 건수·제목·고친 시각이 그
 p('## 7. 반대 방향 — B가 A를 (카드 4)');
 p('');
 const ba = await attack(B, cB, A, cA, 'A');
+check('C120 비교', 'B가 자기 자료에 보낸 읽기·수정·삭제는 200', ba.ownerOk);
 check('C120', 'B → A 읽기·수정·삭제 모두 404', ba.readOk && ba.updOk && ba.delOk, [...ba.st, ...ba.st2, ...ba.st3].join(', '));
 check('C122', '거절 앞뒤로 A의 자료 건수·제목·고친 시각이 그대로', ba.same, `전: ${fmtSnap(ba.pre)} / 뒤: ${fmtSnap(ba.post)}`);
 check('C121', '모든 거절이 404(존재 자체를 감춤)', [ab, ba].every((x) => [...x.st, ...x.st2, ...x.st3].every((s) => s === 404)));
