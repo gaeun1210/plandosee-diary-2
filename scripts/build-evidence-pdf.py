@@ -135,10 +135,9 @@ pages.append('<h2 class="card">카드 4 — 남의 자료가 안 열리는 것�
 <h3>4-2. A → B: 주인일 때 성공, 남일 때 거절 (C117·C118·C119·C121)</h3>
 ''' + pair(req('읽기(주인): A의 할 일 #18의 실행 기록', '읽기 성공 — A가 자기 할 일'), req('읽기: B의 할 일 #20의 실행 기록', '읽기 거절 — A가 B의 할 일')) +
  pair(req('수정(주인): A의 할 일 #19 고치기', '수정 성공 — A가 자기 할 일'), req('수정: B의 할 일 #20 고치기', '수정 거절 — A가 B의 할 일')) +
- pair(req('삭제(주인): A의 할 일 #22 지우기', '삭제 성공 — A가 자기 할 일'), req('삭제: B의 할 일 #21 지우기', '삭제 거절 — A가 B의 할 일')))
+ pair(req('삭제(주인): A의 할 일 #22 지우기', '삭제 성공 — A가 자기 할 일'), req('삭제: B의 할 일 #21 지우기', '삭제 거절 — A가 B의 할 일')) + '<p class="note">A → B 나머지 거절: <code>GET /api/tasks?plan_id=8</code>, <code>/api/plans/8/revisions</code>, <code>/api/plans/8/review</code>, <code>PUT /api/plans/8</code>, <code>POST /api/tasks/21/complete</code>, <code>POST /api/tasks</code>(B 계획에 끼워 넣기), <code>DELETE /api/logs/8</code> — 모두 404. 거절은 존재 자체를 감추는 404.</p>')
 
-pages.append('<p class="note">A → B 나머지 거절: <code>GET /api/tasks?plan_id=8</code>, <code>/api/plans/8/revisions</code>, <code>/api/plans/8/review</code>, <code>PUT /api/plans/8</code>, <code>POST /api/tasks/21/complete</code>, <code>POST /api/tasks</code>(B 계획에 끼워 넣기), <code>DELETE /api/logs/8</code> — 모두 404. 거절은 존재 자체를 감추는 404.</p>' +
- '<h3>4-3. 반대 방향 B → A (C120)</h3>' +
+pages.append('<h3>4-3. 반대 방향 B → A (C120)</h3>' +
  pair(req('읽기: A의 할 일 #18의 실행 기록', '읽기 거절 — B가 A의 할 일'), req('수정: A의 할 일 #18 고치기', '수정 거절 — B가 A의 할 일')) +
  pair(req('삭제: A의 할 일 #19 지우기', '삭제 거절 — B가 A의 할 일'), req('삭제: A의 실행 기록 #7 지우기', '삭제 거절 — B가 A의 실행 기록')) +
  '<p class="note">B가 자기 자료에 같은 읽기·수정·삭제를 보내면 200, 200, 200. B → A 나머지 6가지도 모두 404.</p>' +
