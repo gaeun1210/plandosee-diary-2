@@ -1,0 +1,30 @@
+# 남길 것 화면 캡처: 배포 주소를 실제 브라우저로 열어 찍고 docs/evidence/shots/ 에 커밋한다.
+name: evidence-shots
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: '배포 주소'
+        required: true
+permissions:
+  contents: write
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: |
+          npm i --no-save playwright@1.56
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk >/dev/null
+      - env:
+          BASE: ${{ inputs.base }}
+        run: node scripts/evidence-shots.mjs
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/evidence/shots
+          git commit -m "남길 것 화면 캡처 (배포 주소)" || exit 0
+          git push
