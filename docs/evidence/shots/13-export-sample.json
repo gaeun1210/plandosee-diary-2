@@ -1,0 +1,57 @@
+{
+  "format": "pds-diary-export",
+  "version": 3,
+  "schema": "contracts/pds-schema-v3.json",
+  "exported_at": "2026-10-19T10:03:48.544Z",
+  "account": {
+    "login_id": "shot_46eb00",
+    "created_at": "2026-10-19T10:03:31.046Z"
+  },
+  "rules": {
+    "date_only": "YYYY-MM-DD, Asia/Seoul 달력 날짜",
+    "timestamps": "ISO 8601 UTC",
+    "duration_unit": "minutes"
+  },
+  "plans": [
+    {
+      "id": "11",
+      "current_revision": 1,
+      "title": "증거용 시험 계획",
+      "start_date": "2026-10-19",
+      "end_date": "2026-10-19",
+      "priority": 2,
+      "success_criteria": "캡처용",
+      "estimated_minutes": 30,
+      "carried_lesson": null,
+      "carried_from_review_id": null,
+      "created_at": "2026-10-19T10:03:32.028Z",
+      "updated_at": "2026-10-19T10:03:32.028Z"
+    }
+  ],
+  "plan_revisions": [
+    {
+      "id": "15",
+      "plan_id": "11",
+      "revision_no": 1,
+      "title": "증거용 시험 계획",
+      "start_date": "2026-10-19",
+      "end_date": "2026-10-19",
+      "priority": 2,
+      "success_criteria": "캡처용",
+      "estimated_minutes": 30,
+      "carried_lesson": null,
+      "change_note": "처음 세운 계획",
+      "created_at": "2026-10-19T10:03:32.028Z"
+    }
+  ],
+  "tasks": [],
+  "task_completions": [],
+  "work_logs": [],
+  "reviews": [],
+  "running_timer": [],
+  "imports": [],
+  "experiment": null,
+  "experiment_days": [],
+  "experiment_rule_change": null,
+  "experiment_stats": null
+}

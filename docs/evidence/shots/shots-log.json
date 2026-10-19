@@ -1,0 +1,23 @@
+{
+  "base": "https://plandosee-diary-2.vercel.app",
+  "test_id": "shot_46eb00",
+  "at": "2026-10-19T10:03:53.083Z",
+  "log": [
+    {
+      "k": "01",
+      "v": "로그인 없이 https://plandosee-diary-2.vercel.app/?plan=1#tasks 를 열었을 때 화면"
+    },
+    {
+      "k": "08",
+      "v": "로그아웃 뒤 https://plandosee-diary-2.vercel.app/?plan=11#tasks 를 열었을 때 화면"
+    },
+    {
+      "k": "13",
+      "v": "내보내기 응답 HTTP 200, 1405바이트"
+    },
+    {
+      "k": "14",
+      "v": "계정 삭제 응답 HTTP 200 {\"deleted\":true,\"removed\":{\"plans\":1,\"tasks\":0,\"work_logs\":0,\"reviews\":0,\"experiment_days\":0}}"
+    }
+  ]
+}
